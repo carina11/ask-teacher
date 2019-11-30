@@ -43,6 +43,19 @@ class App extends React.Component{
       });
     });
   }
+
+  signup(){
+    var email = document.getElementById("signUpEmail").value;
+    var password = document.getElementById("signUpPassword").value;
+    firebase.auth().createUserWithEmailAndPassword(email, password).catch(function(error) {
+      // Handle Errors here.
+      var errorCode = error.code;
+      var errorMessage = error.message;
+      // ...
+      console.log(errorCode);
+      console.log(errorMessage);
+    });
+  }
   
   render(){
     return(
@@ -71,6 +84,14 @@ class App extends React.Component{
         </select>
         <br/>
         <input type="button" value="検索" onClick={this.search.bind(this)}/>
+
+        <br/><br/>
+        ユーザ登録<br/>
+        mail
+        <input type="text" id="signUpEmail"/><br/>
+        password
+        <input type="text" id="signUpPassword"/><br/>
+        <button onClick={this.signup.bind(this)}>送信</button>
       </div>
     );
   }
