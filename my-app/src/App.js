@@ -23,14 +23,21 @@ class App extends React.Component{
     //alert(`${document.getElementById("kadai").value}${document.getElementById("subject").options[document.getElementById("subject").selectedIndex].value}`);
     let json ={
       "kadaiName": document.getElementById("kadai").value,
-      "subject": document.getElementById("subject").options[document.getElementById("subject").selectedIndex].value
+      "subject": document.getElementById("subject").options[document.getElementById("subject").selectedIndex].value,
+      "questionURL": "",
+      "user": firebase.auth().currentUser.email,
+      "kaisetsu":{
+        "exist": false,
+        "kaisetsuURL": "",
+        "user": "ryoinagaki"
+      }
     };
     //console.log(json.kadaiName);
     //console.log(json.subject);
     var database = firebase.database().ref("test").push(json);
     database.once("value",function(snapshot){
-      console.log(snapshot.val().kadaiName);
-      console.log(snapshot.val().subject);
+      //console.log(snapshot.val().kadaiName);
+      //console.log(snapshot.val().subject);
     });
   }
 
@@ -45,23 +52,43 @@ class App extends React.Component{
   }
 
   signup(){
-    var email = document.getElementById("signUpEmail").value;
+    var email = document.getElementById("signUpEmail").value + "@navi.com";
     var password = document.getElementById("signUpPassword").value;
-    firebase.auth().createUserWithEmailAndPassword(email, password).catch(function(error) {
+    var confirmPassword = document.getElementById("confirmPassword").value;
+
+    if(password === confirmPassword){
+      firebase.auth().createUserWithEmailAndPassword(email, password).catch(function(error) {
+        // Handle Errors here.
+        var errorCode = error.code;
+        var errorMessage = error.message;
+        // ...
+        console.log(errorCode);
+        alert(errorMessage);
+      });
+    }else{
+      alert("パスワードが一致しません");
+    }
+  }
+
+  signin(){
+    var email = document.getElementById("signInEmail").value + "@navi.com";
+    var password = document.getElementById("signInPassword").value;
+
+    firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
       // Handle Errors here.
-      var errorCode = error.code;
-      var errorMessage = error.message;
+      console.log(error.code);
+      alert(error.message);
       // ...
-      console.log(errorCode);
-      console.log(errorMessage);
     });
+    console.log(firebase.auth().currentUser.email);
   }
   
   render(){
     return(
       <div>
+        <div id="create">
         課題名
-        <input type="text" id="kadai"/><br/><br/>
+        <input type="text" id="kadai"/><br/>
         科目選択&nbsp;
         <select id="subject">
           <option value=""></option>
@@ -70,28 +97,43 @@ class App extends React.Component{
           <option value="social_studies">社会</option>
           <option value="science">理科</option>
           <option value="japanese">国語</option>
-        </select><br/><br/>
+        </select><br/>
         <button onClick={this.text.bind(this)}>送信</button>
-        <br/><br/><br/>
-        科目検索<br/>
-        <select id="subjectSearch">
-          <option value=""></option>
-          <option value="english">英語</option>
-          <option value="math">数学</option>
-          <option value="social_studies">社会</option>
-          <option value="science">理科</option>
-          <option value="japanese">国語</option>
-        </select>
-        <br/>
-        <input type="button" value="検索" onClick={this.search.bind(this)}/>
-
+        </div>
         <br/><br/>
-        ユーザ登録<br/>
-        mail
-        <input type="text" id="signUpEmail"/><br/>
-        password
-        <input type="text" id="signUpPassword"/><br/>
-        <button onClick={this.signup.bind(this)}>送信</button>
+        <div id="searchSubject">
+          科目検索<br/>
+          <select id="subjectSearch">
+            <option value=""></option>
+            <option value="english">英語</option>
+            <option value="math">数学</option>
+            <option value="social_studies">社会</option>
+            <option value="science">理科</option>
+            <option value="japanese">国語</option>
+          </select>
+          <br/>
+          <input type="button" value="検索" onClick={this.search.bind(this)}/>
+        </div>
+        <br/><br/>
+        <div id="signup">
+          ユーザ登録<br/>
+          mail
+          <input type="text" id="signUpEmail"/><br/>
+          password
+          <input type="password" id="signUpPassword"/><br/>
+          再入力
+          <input type="password" id="confirmPassword"/><br/>
+          <button onClick={this.signup.bind(this)}>送信</button>
+        </div>
+        <br/><br/>
+        <div id="signin">
+        ユーザ認証<br/>
+          mail
+          <input type="text" id="signInEmail"/><br/>
+          password
+          <input type="password" id="signInPassword"/><br/>
+          <button onClick={this.signin.bind(this)}>送信</button>
+        </div>
       </div>
     );
   }
