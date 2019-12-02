@@ -30,14 +30,16 @@ class App extends React.Component{
         <BrowserRouter>
         <Link to="/">SignIn</Link><br/>
         <Link to="/signup">SignUp</Link><br/>
-        <Link to="/kadai">問題投稿</Link><br/>
-        <Link to="/kadaisearch">科目検索</Link><br/>
+        <Link to="/assignment">問題投稿</Link><br/>
+        <Link to="/assignmentsearch">科目検索</Link><br/>
+        <Link to="/index">インデックス</Link><br/>
         <br/><br/>
 
           <Route exact path='/' component={SignIn}/>
           <Route path='/signup' component={SignUp}/>
-          <Route path='/kadai' component={Kadai}/>
-          <Route path='/kadaisearch' component={KadaiSearch}/>
+          <Route path='/assignment' component={Assignment}/>
+          <Route path='/assignmentsearch' component={AssignmentSearch}/>
+          <Route path='/index' component={Index}/>
 
         </BrowserRouter>
         
@@ -54,17 +56,17 @@ class App extends React.Component{
   }
 }
 
-class Kadai extends React.Component{
-  kadai(){
+class Assignment extends React.Component{
+  assignment(){
     //alert(`${document.getElementById("kadai").value}${document.getElementById("subject").options[document.getElementById("subject").selectedIndex].value}`);
     let json ={
-      "kadaiName": document.getElementById("kadai").value,
+      "assignmentName": document.getElementById("kadai").value,
       "subject": document.getElementById("subject").options[document.getElementById("subject").selectedIndex].value,
-      "questionURL": "",
+      "assignmentURL": "",
       "user": firebase.auth().currentUser.email,
-      "kaisetsu":{
+      "answer":{
         "exist": false,
-        "kaisetsuURL": "",
+        "answerURL": "",
         "user": "ryoinagaki"
       }
     };
@@ -91,19 +93,19 @@ class Kadai extends React.Component{
           <option value="science">理科</option>
           <option value="japanese">国語</option>
         </select><br/>
-        <button onClick={this.kadai.bind(this)}>送信</button>
+        <button onClick={this.assignment.bind(this)}>送信</button>
         </div>
     );
   }
 }
 
-class KadaiSearch extends React.Component{
+class AssignmentSearch extends React.Component{
   search(){
     var subject = document.getElementById("subjectSearch").options[document.getElementById("subjectSearch").selectedIndex].value;
     var database = firebase.database().ref("test");
     database.once("value", function(snapshot){
       snapshot.forEach(function(childSnapshot){
-        if(childSnapshot.val().subject === subject)console.log(childSnapshot.val().kadaiName);
+        if(childSnapshot.val().subject === subject)console.log(childSnapshot.val().assignmentName);
       });
     });
   }
@@ -185,6 +187,27 @@ class SignIn extends React.Component{
           <input type="password" id="signInPassword"/><br/>
           <button onClick={this.signin.bind(this)}>送信</button>
         </div>
+    );
+  }
+}
+
+class Index extends React.Component{
+  search(){
+    var database = firebase.database().ref("test");
+    var  assignment = [];
+    database.once("value", function(snapshot){
+      snapshot.forEach(function(childSnapshot){
+        if(childSnapshot.val().user === firebase.auth().currentUser.email)assignment.push(childSnapshot.val().assignmentName);
+      });
+    });
+    console.log(assignment);
+  }
+  
+  render(){
+    return(
+      <div>
+        {this.search()}
+      </div>
     );
   }
 }
