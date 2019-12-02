@@ -2,6 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import firebase from 'firebase';
+import {Link, BrowserRouter, Route} from 'react-router-dom';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNT2NvrxwArQrNZJQTozcveab7cH3ngf4",
@@ -25,13 +26,29 @@ class App extends React.Component{
   render(){
     return(
       <div>
-        <Kadai/>
+        
+        <BrowserRouter>
+        <Link to="/">SignIn</Link><br/>
+        <Link to="/signup">SignUp</Link><br/>
+        <Link to="/kadai">問題投稿</Link><br/>
+        <Link to="/kadaisearch">科目検索</Link><br/>
+        <br/><br/>
+
+          <Route exact path='/' component={SignIn}/>
+          <Route path='/signup' component={SignUp}/>
+          <Route path='/kadai' component={Kadai}/>
+          <Route path='/kadaisearch' component={KadaiSearch}/>
+
+        </BrowserRouter>
+        
+
+        {/*<Kadai/>
         <br/><br/>
         <KadaiSearch/>
         <br/><br/>
         <SignUp/>
         <br/><br/>
-        <SignIn/>
+        <SignIn/>*/}
       </div>
     );
   }
