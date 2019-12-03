@@ -2,7 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import firebase from 'firebase';
-import {Link, BrowserRouter, Route} from 'react-router-dom';
+import {Link, BrowserRouter, Route, Redirect} from 'react-router-dom';
 
 const firebaseConfig = {
   apiKey: "AIzaSyDNT2NvrxwArQrNZJQTozcveab7cH3ngf4",
@@ -33,6 +33,7 @@ class App extends React.Component{
         <Link to="/assignment">問題投稿</Link><br/>
         <Link to="/assignmentsearch">科目検索</Link><br/>
         <Link to="/index">インデックス</Link><br/>
+        <Link to="/signout">SignOut</Link><br/>
         <br/><br/>
 
           <Route exact path='/' component={SignIn}/>
@@ -40,6 +41,7 @@ class App extends React.Component{
           <Route path='/assignment' component={Assignment}/>
           <Route path='/assignmentsearch' component={AssignmentSearch}/>
           <Route path='/index' component={Index}/>
+          <Route path='/signout' component={SignOut}/>
 
         </BrowserRouter>
         
@@ -169,13 +171,14 @@ class SignIn extends React.Component{
     var email = document.getElementById("signInEmail").value + "@navi.com";
     var password = document.getElementById("signInPassword").value;
 
-    firebase.auth().signInWithEmailAndPassword(email, password).catch(function(error) {
+    firebase.auth().signInWithEmailAndPassword(email, password).then(()=>{
+      console.log(firebase.auth().currentUser.email);
+    }).catch(function(error) {
       // Handle Errors here.
       console.log(error.code);
       alert(error.message);
       // ...
     });
-    console.log(firebase.auth().currentUser.email);
   }
   render(){
     return(
@@ -197,7 +200,7 @@ class Index extends React.Component{
     var  assignment = [];
     database.once("value", function(snapshot){
       snapshot.forEach(function(childSnapshot){
-        if(childSnapshot.val().user === firebase.auth().currentUser.email)assignment.push(childSnapshot.val().assignmentName);
+        if(firebase.auth().currentUser)if(childSnapshot.val().user === firebase.auth().currentUser.email)assignment.push(childSnapshot.val().assignmentName);
       });
     });
     console.log(assignment);
@@ -210,6 +213,15 @@ class Index extends React.Component{
       </div>
     );
   }
+}
+
+const SignOut = () => {
+  firebase.auth().signOut().then(()=>{
+    console.log("サインアウトしました");
+  });
+  return(
+    <Redirect to="/"/>
+  )
 }
 
 
