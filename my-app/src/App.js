@@ -262,62 +262,48 @@ class SignIn extends React.Component {
 }
 
 class Index extends React.Component {
-  constructor(props){
+  constructor(props) {
     super(props);
-    this.state ={
-      name: [
-        "a", "b", "c" 
-      ],
-      subject: [
-        "a", "math", "science"
-      ],
-      json: [],
-
-    }
-
-    
+    this.state = {
+      name: ["a", "b", "c"],
+      subject: ["a", "math", "science"],
+      json: []
+    };
   }
-  componentWillMount(){
+  componentWillMount() {
     var database = firebase.database().ref("test");
     var assignment = [];
     var subject = [];
     var self = this;
+
     database.once("value", function(snapshot) {
       snapshot.forEach(function(childSnapshot) {
         if (firebase.auth().currentUser)
           if (childSnapshot.val().user === firebase.auth().currentUser.email) {
             assignment.push(childSnapshot.val().assignmentName.toString());
             subject.push(childSnapshot.val().subject.toString());
-            self.state.json = self.state.json.concat({
-              name: childSnapshot.val().assignmentName, subject: childSnapshot.val().subject
+            self.setState({
+              json: self.state.json.concat({
+                name: childSnapshot.val().assignmentName,
+                subject: childSnapshot.val().subject
+              })
             });
           }
       });
-      console.log(self.state.json);
     });
-    console.log(subject);
-        //console.log(self.state.json);
-    this.setState({ json: [{ name: "c", subject: "japanese"}]});
-    
-   // this.state.name = this.state.name.concat(a);
-    this.setState({ json: [
-      { name: "a", subject: "english"},
-      { name: "b", subject: "mathmatics"}
-    ]});
   }
-  
 
   render() {
     return (
       <div style={{ maxWidth: "100%" }}>
         <MaterialTable
           icons={tableIcons}
-          title="Multiple Actions Preview"
+          title="投稿した問題一覧"
           columns={[
             { title: "問題名", field: "name" },
-            { title: "科目", field: "subject" }
+            { title: "科目", field: "subject" },
+            { title: "投稿日", field: "data"}
           ]}
-          
           data={this.state.json}
           actions={[
             {
