@@ -100,7 +100,9 @@ class Assignment extends React.Component {
     }
   }
   assignment() {
-    //alert(`${document.getElementById("kadai").value}${document.getElementById("subject").options[document.getElementById("subject").selectedIndex].value}`);
+    var date = new Date();    
+    var month = date.getMonth() + 1;
+    var day = date.getDay() + 1;
     let json = {
       assignmentName: document.getElementById("kadai").value,
       subject: document.getElementById("subject").options[
@@ -108,6 +110,9 @@ class Assignment extends React.Component {
       ].value,
       assignmentURL: "",
       user: firebase.auth().currentUser.email,
+      date: {
+        month: month,
+        day: day},
       answer: {
         exist: false,
         answerURL: "",
@@ -307,7 +312,8 @@ class Index extends React.Component {
             self.setState({
               json: self.state.json.concat({
                 name: childSnapshot.val().assignmentName,
-                subject: childSnapshot.val().subject
+                subject: childSnapshot.val().subject,
+                date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
               })
             });
           }
@@ -324,7 +330,7 @@ class Index extends React.Component {
           columns={[
             { title: "問題名", field: "name" },
             { title: "科目", field: "subject" },
-            { title: "投稿日", field: "data"}
+            { title: "投稿日", field: "date"}
           ]}
           data={this.state.json}
           actions={[
@@ -332,7 +338,7 @@ class Index extends React.Component {
               icon: DeleteIcon,
               tooltip: "問題の削除",
               onClick: (event, rowData) =>
-                alert("You want to delete " + rowData.name)
+                alert(rowData.name + "を削除しますか？ " )
             }
           ]}
         />
