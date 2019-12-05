@@ -24,6 +24,7 @@ import SaveAlt from "@material-ui/icons/SaveAlt";
 import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
 import DeleteIcon from "@material-ui/icons/Delete";
+import Container from '@material-ui/core/Container';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -132,9 +133,11 @@ class Assignment extends React.Component {
     }
     return (
       <div id="create">
-        課題名
+        <Container maxWidth="sm">
+        <h2>問題投稿</h2><br/>
+        問題名<br/>
         <input type="text" id="kadai" />
-        <br />
+        <br /><br/>
         科目選択&nbsp;
         <select id="subject">
           <option value=""></option>
@@ -144,9 +147,10 @@ class Assignment extends React.Component {
           <option value="science">理科</option>
           <option value="japanese">国語</option>
         </select>
-        <br />
-        <button onClick={this.assignment.bind(this)}>送信</button>
+        <br /><br/><br/>
+        <Button variant="contained" color="primary" onClick={this.assignment.bind(this)}>送信</Button>
         {redirect}
+        </Container>
       </div>
     );
   }
@@ -259,19 +263,21 @@ class SignIn extends React.Component {
       var redirect = <Redirect to="/index"/>;
     }
     return (
-      <div id="signin">
+      <div id="signin" >
+        <Container maxWidth="sm">
         <h2>ユーザ認証</h2>
         <br />
         ID<br/>
         <input type="text" id="signInEmail" />
         {/*<TextField class="signInEmail"id="standard-basic" value={this.state.email} onChange={this.handleChange_email} label="ID"/>*/}
-        <br />
+        <br /><br/>
         Password<br/>
         <input type="password" id="signInPassword" />
         {/*<TextField class="signInPassword"id="standard-basic" type="password" value={this.state.password} onChange={this.handleChange_password} label="Password"/>*/}
         <br /><br/>
         <Button variant="contained" color="primary" onClick={this.signin.bind(this)}>送信</Button>
         {redirect}
+        </Container>
       </div>
     );
   }
