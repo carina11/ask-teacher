@@ -5,7 +5,9 @@ import firebase from "firebase";
 import { Link, BrowserRouter, Route, Redirect } from "react-router-dom";
 import MaterialTable from "material-table";
 import { forwardRef } from "react";
-
+import { makeStyles } from '@material-ui/core/styles';
+import TextField from '@material-ui/core/TextField';
+import Button from '@material-ui/core/Button';
 import AddBox from "@material-ui/icons/AddBox";
 import ArrowDownward from "@material-ui/icons/ArrowDownward";
 import Check from "@material-ui/icons/Check";
@@ -66,7 +68,7 @@ class App extends React.Component {
     return (
       <div>
         <BrowserRouter>
-          <Link to="/">SignIn</Link>
+          {/*<Link to="/">SignIn</Link>
           <br />
           <Link to="/signup">SignUp</Link>
           <br />
@@ -79,7 +81,7 @@ class App extends React.Component {
           <Link to="/signout">SignOut</Link>
           <br />
           <br />
-          <br />
+    <br />*/}
 
           <Route exact path="/" component={SignIn} />
           <Route path="/signup" component={SignUp} />
@@ -102,6 +104,12 @@ class App extends React.Component {
 }
 
 class Assignment extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      redirect: false,
+    }
+  }
   assignment() {
     //alert(`${document.getElementById("kadai").value}${document.getElementById("subject").options[document.getElementById("subject").selectedIndex].value}`);
     let json = {
@@ -127,9 +135,13 @@ class Assignment extends React.Component {
       //console.log(snapshot.val().kadaiName);
       //console.log(snapshot.val().subject);
     });
+    this.setState({ redirect: true});
   }
 
   render() {
+    if(this.state.redirect === true){
+      var redirect = <Redirect to="/index"/>;
+    }
     return (
       <div id="create">
         課題名
@@ -146,6 +158,7 @@ class Assignment extends React.Component {
         </select>
         <br />
         <button onClick={this.assignment.bind(this)}>送信</button>
+        {redirect}
       </div>
     );
   }
@@ -210,12 +223,12 @@ class SignUp extends React.Component {
   render() {
     return (
       <div id="signup">
-        ユーザ登録
+        <h2>ユーザ登録</h2>
         <br />
-        mail
+        ID<br/>
         <input type="text" id="signUpEmail" />
         <br />
-        password
+        Password<br/>
         <input type="password" id="signUpPassword" />
         <br />
         再入力
@@ -227,15 +240,24 @@ class SignUp extends React.Component {
   }
 }
 class SignIn extends React.Component {
+  constructor(props){
+    super(props);
+    this.state = {
+      redirect: false,
+      email: '',
+      password: ''
+    };
+  }
   signin() {
     var email = document.getElementById("signInEmail").value + "@navi.com";
     var password = document.getElementById("signInPassword").value;
-
+    var self = this;
     firebase
       .auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
         console.log(firebase.auth().currentUser.email);
+        self.setState({redirect: true});
       })
       .catch(function(error) {
         // Handle Errors here.
@@ -245,17 +267,23 @@ class SignIn extends React.Component {
       });
   }
   render() {
+    if(this.state.redirect === true){
+      var redirect = <Redirect to="/index"/>;
+    }
     return (
       <div id="signin">
-        ユーザ認証
+        <h2>ユーザ認証</h2>
         <br />
-        mail
+        ID<br/>
         <input type="text" id="signInEmail" />
+        {/*<TextField class="signInEmail"id="standard-basic" value={this.state.email} onChange={this.handleChange_email} label="ID"/>*/}
         <br />
-        password
+        Password<br/>
         <input type="password" id="signInPassword" />
-        <br />
-        <button onClick={this.signin.bind(this)}>送信</button>
+        {/*<TextField class="signInPassword"id="standard-basic" type="password" value={this.state.password} onChange={this.handleChange_password} label="Password"/>*/}
+        <br /><br/>
+        <Button variant="contained" color="primary" onClick={this.signin.bind(this)}>送信</Button>
+        {redirect}
       </div>
     );
   }
@@ -314,6 +342,10 @@ class Index extends React.Component {
             }
           ]}
         />
+        <br/><br/>
+        <Link to="/assignment" color="primary">問題の新規投稿</Link><br/>
+        <Link to="/signout" color="primary">サインアウト</Link>
+
       </div>
     );
   }
