@@ -1,7 +1,7 @@
 import React from "react";
 import logo from "./logo.svg";
 import "./App.css";
-import firebase from "firebase";
+import firebase from './firebase';
 import { Link, BrowserRouter, Route, Redirect } from "react-router-dom";
 import MaterialTable from "material-table";
 import { forwardRef } from "react";
@@ -49,19 +49,7 @@ const tableIcons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
 };
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDNT2NvrxwArQrNZJQTozcveab7cH3ngf4",
-  authDomain: "ask-teacher-0211.firebaseapp.com",
-  databaseURL: "https://ask-teacher-0211.firebaseio.com",
-  projectId: "ask-teacher-0211",
-  storageBucket: "ask-teacher-0211.appspot.com",
-  messagingSenderId: "45700314741",
-  appId: "1:45700314741:web:ee03cc032881993b232a3c",
-  measurementId: "G-PD016DXDC5"
-};
 
-firebase.initializeApp(firebaseConfig);
-firebase.analytics();
 
 class App extends React.Component {
   render() {
