@@ -365,7 +365,6 @@ class Index extends React.Component {
           columns={[
             { title: "問題名", field: "name" },
             { title: "科目", field: "subject" },
-            {/* title: "投稿日", field: "date"*/},
             { title: "問題URL", field: "questionURL"},
             { title: "解答URL", field: "AnswerURL"}
           ]}
