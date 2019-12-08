@@ -299,7 +299,8 @@ class Index extends React.Component {
     this.state = {
       name: ["a", "b", "c"],
       subject: ["a", "math", "science"],
-      json: []
+      json: [],
+      assignment: '',
     };
   }
   componentWillMount() {
@@ -341,6 +342,7 @@ class Index extends React.Component {
   }
 
   render() {
+    if(firebase.auth().currentUser.displayName === "student")this.state.assignment = <Link to="/assignment" color="primary">問題の新規投稿</Link>;
     return (
       <div style={{ maxWidth: "100%" }}>
         <MaterialTable
@@ -362,7 +364,7 @@ class Index extends React.Component {
           ]}
         />
         <br/><br/>
-        <Link to="/assignment" color="primary">問題の新規投稿</Link><br/>
+        {this.state.assignment}<br/>
         <Link to="/signout" color="primary">サインアウト</Link>
 
       </div>
