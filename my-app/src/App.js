@@ -60,7 +60,6 @@ class App extends React.Component {
           <Route exact path="/" component={SignIn} />
           <Route path="/signup" component={SignUp} />
           <Route path="/assignment" component={Assignment} />
-          <Route path="/assignmentsearch" component={AssignmentSearch} />
           <Route path="/index" component={Index} />
           <Route path="/signout" component={SignOut} />
         </BrowserRouter>
@@ -89,7 +88,8 @@ class Assignment extends React.Component {
       user: firebase.auth().currentUser.email,
       date: {
         month: month,
-        day: day},
+        day: day
+      },
       answer: {
         exist: false,
         answerURL: "",
@@ -134,39 +134,7 @@ class Assignment extends React.Component {
   }
 }
 
-class AssignmentSearch extends React.Component {
-  search() {
-    var subject = document.getElementById("subjectSearch").options[
-      document.getElementById("subjectSearch").selectedIndex
-    ].value;
-    var database = firebase.database().ref("test");
-    database.once("value", function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        if (childSnapshot.val().subject === subject)
-          console.log(childSnapshot.val().assignmentName);
-      });
-    });
-  }
 
-  render() {
-    return (
-      <div id="searchSubject">
-        科目検索
-        <br />
-        <select id="subjectSearch">
-          <option value=""></option>
-          <option value="英語">英語</option>
-          <option value="数学">数学</option>
-          <option value="社会">社会</option>
-          <option value="理科">理科</option>
-          <option value="国語">国語</option>
-        </select>
-        <br />
-        <input type="button" value="検索" onClick={this.search.bind(this)} />
-      </div>
-    );
-  }
-}
 
 class SignUp extends React.Component {
   signup() {
@@ -397,8 +365,9 @@ class Index extends React.Component {
           columns={[
             { title: "問題名", field: "name" },
             { title: "科目", field: "subject" },
-            { title: "投稿日", field: "date"},
-            { title: "解答の有無", field: ""}
+            {/* title: "投稿日", field: "date"*/},
+            { title: "問題URL", field: "questionURL"},
+            { title: "解答URL", field: "AnswerURL"}
           ]}
           data={this.state.json}
           actions={this.state.action}
