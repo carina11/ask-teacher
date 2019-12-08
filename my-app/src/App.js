@@ -73,12 +73,15 @@ class Assignment extends React.Component {
     super(props);
     this.state = {
       redirect: false,
+      image: '',
+      address: '',
     }
   }
   assignment() {
     var date = new Date();    
     var month = date.getMonth() + 1;
     var day = date.getDay() + 1;
+    var self = this;
     let json = {
       assignmentName: document.getElementById("kadai").value,
       subject: document.getElementById("subject").options[
@@ -101,10 +104,28 @@ class Assignment extends React.Component {
       .ref("test")
       .push(json);
     database.once("value", function(snapshot) {
+      var storageRef = firebase.storage().ref().child(snapshot.key + '.png');
+      storageRef.put(self.state.image).then(()=>{
+        storageRef = firebase.storage().ref().child(snapshot.key+'.png');
+      var key = snapshot.key;
+      storageRef.getDownloadURL().then(function(url){
+        console.log(url);
+        firebase.database().ref("test/"+key).update({
+          assignmentURL: url,
+        });
+        self.setState({ redirect: true});
+      });
+      });
+      
     });
-    this.setState({ redirect: true});
   }
 
+  getImage(event){
+    var image = event.target.files[0];
+    this.setState({
+      image: image,
+    });
+  }
   render() {
     if(this.state.redirect === true){
       var redirect = <Redirect to="/index"/>;
@@ -124,7 +145,9 @@ class Assignment extends React.Component {
           <option value="社会">社会</option>
           <option value="理科">理科</option>
           <option value="国語">国語</option>
-        </select>
+        </select><br/><br/>
+        画像アップロード<br/>
+        <input type="file" accept="image/*" onChange ={(event)=>{this.getImage(event)}}/>
         <br /><br/><br/>
         <Button variant="contained" color="primary" onClick={this.assignment.bind(this)}>送信</Button>
         {redirect}
@@ -273,8 +296,6 @@ class Index extends React.Component {
   }
   componentWillMount() {
     var database = firebase.database().ref("test");
-    var assignment = [];
-    var subject = [];
     var self = this;
     if(firebase.auth().currentUser === null){
       this.setState({
@@ -284,23 +305,13 @@ class Index extends React.Component {
     else if(firebase.auth().currentUser.displayName === "student"){
       self.setState({
         assignment: <Link to="/assignment" color="primary">問題の新規投稿</Link>,
-        
-        action: [
-          {
-            icon: InfoIcon,
-            tooltip: "詳細を表示します",
-            onClick: (event, rowData) => {
-              alert(rowData.name + "の詳細を表示しますか？");
-            }
-          }
-          ,
-        ],
         editable: {
           onRowDelete: oldData =>
             new Promise((resolve, reject) => {
               setTimeout(() => {
                 { 
                   firebase.database().ref("test/"+oldData.key).remove();
+                  firebase.storage().ref().child(oldData.key+'.png').delete();
                   let data = this.state.json;
                   const index = data.indexOf(oldData);
                   data.splice(index, 1);
@@ -321,6 +332,7 @@ class Index extends React.Component {
                   name: childSnapshot.val().assignmentName,
                   subject: childSnapshot.val().subject,
                   date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
+                  questionURL: childSnapshot.val().assignmentURL,
                 })
               });
             }
@@ -348,6 +360,7 @@ class Index extends React.Component {
                   name: childSnapshot.val().assignmentName,
                   subject: childSnapshot.val().subject,
                   date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
+                  questionURL: childSnapshot.val().assignmentURL,
                 })
               });
           }
@@ -365,8 +378,8 @@ class Index extends React.Component {
           columns={[
             { title: "問題名", field: "name" },
             { title: "科目", field: "subject" },
-            { title: "問題URL", field: "questionURL"},
-            { title: "解答URL", field: "AnswerURL"}
+            { title: "問題", field: "questionURL", render: rowData => <img src={rowData.questionURL} style={{width: 60}}/>},
+            { title: "解答", field: "AnswerURL"}
           ]}
           data={this.state.json}
           actions={this.state.action}
