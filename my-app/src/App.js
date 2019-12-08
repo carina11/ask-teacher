@@ -25,6 +25,8 @@ import Search from "@material-ui/icons/Search";
 import ViewColumn from "@material-ui/icons/ViewColumn";
 import DeleteIcon from "@material-ui/icons/Delete";
 import Container from '@material-ui/core/Container';
+import AddIcon from '@material-ui/icons/Add';
+import InfoIcon from '@material-ui/icons/Info';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -99,8 +101,6 @@ class Assignment extends React.Component {
       .ref("test")
       .push(json);
     database.once("value", function(snapshot) {
-      //console.log(snapshot.val().kadaiName);
-      //console.log(snapshot.val().subject);
     });
     this.setState({ redirect: true});
   }
@@ -246,18 +246,13 @@ class SignIn extends React.Component {
     var email = document.getElementById("signInEmail").value + "@navi.com";
     var password = document.getElementById("signInPassword").value;
     var self = this;
-    firebase
+    firebase.auth().setPersistence(firebase.auth.Auth.Persistence.LOCAL)
+    .then(() =>{
+      firebase
       .auth()
       .signInWithEmailAndPassword(email, password)
       .then(() => {
         console.log(firebase.auth().currentUser.email);
-        //var displayName = firebase.auth().currentUser.displayName;
-        /*if(displayName === 'teacher')firebase.auth().currentUser.updateProfile({
-          displayName: "student"
-        });
-        if(displayName === 'student')firebase.auth().currentUser.updateProfile({
-          displayName: "teacher"
-        });*/
         console.log(firebase.auth().currentUser.displayName);
         self.setState({redirect: true});
       })
@@ -267,6 +262,8 @@ class SignIn extends React.Component {
         alert(error.message);
         // ...
       });
+    } );
+    
   }
   render() {
     if(this.state.redirect === true){
@@ -301,6 +298,9 @@ class Index extends React.Component {
       subject: ["a", "math", "science"],
       json: [],
       assignment: '',
+      action: '',
+      redirect: '',
+      editable: '',
     };
   }
   componentWillMount() {
@@ -308,14 +308,48 @@ class Index extends React.Component {
     var assignment = [];
     var subject = [];
     var self = this;
-
-    if(firebase.auth().currentUser.displayName === "student"){
+    if(firebase.auth().currentUser === null){
+      this.setState({
+        assignment: <Redirect to="/"/>
+      });
+    }
+    else if(firebase.auth().currentUser.displayName === "student"){
+      self.setState({
+        assignment: <Link to="/assignment" color="primary">問題の新規投稿</Link>,
+        
+        action: [
+          {
+            icon: InfoIcon,
+            tooltip: "詳細を表示します",
+            onClick: (event, rowData) => {
+              alert(rowData.name + "の詳細を表示しますか？");
+            }
+          }
+          ,
+        ],
+        editable: {
+          onRowDelete: oldData =>
+            new Promise((resolve, reject) => {
+              setTimeout(() => {
+                { 
+                  firebase.database().ref("test/"+oldData.key).remove();
+                  let data = this.state.json;
+                  const index = data.indexOf(oldData);
+                  data.splice(index, 1);
+                  this.setState({ data }, () => resolve());
+                }
+                resolve()
+              }, 1000)
+            }),
+        },
+      });
       database.once("value", function(snapshot) {
         snapshot.forEach(function(childSnapshot) {
           if (firebase.auth().currentUser)
             if (childSnapshot.val().user === firebase.auth().currentUser.email) {
               self.setState({
                 json: self.state.json.concat({
+                  key: childSnapshot.key,
                   name: childSnapshot.val().assignmentName,
                   subject: childSnapshot.val().subject,
                   date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
@@ -325,11 +359,24 @@ class Index extends React.Component {
         });
       });
     } else if(firebase.auth().currentUser.displayName === "teacher"){
+      self.setState({
+        action: [
+          {
+            icon: AddIcon,
+            tooltip: "解答の追加",
+            onClick: (event, rowData) =>{
+              alert(rowData.name + "に解答を追加しますか？ " ); 
+              alert(rowData.key );
+            }
+          }
+        ],
+      });
       database.once("value", function(snapshot) {
         snapshot.forEach(function(childSnapshot) {
           if (firebase.auth().currentUser) {
               self.setState({
                 json: self.state.json.concat({
+                  key: childSnapshot.key,
                   name: childSnapshot.val().assignmentName,
                   subject: childSnapshot.val().subject,
                   date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
@@ -342,7 +389,6 @@ class Index extends React.Component {
   }
 
   render() {
-    if(firebase.auth().currentUser.displayName === "student")this.state.assignment = <Link to="/assignment" color="primary">問題の新規投稿</Link>;
     return (
       <div style={{ maxWidth: "100%" }}>
         <MaterialTable
@@ -351,21 +397,17 @@ class Index extends React.Component {
           columns={[
             { title: "問題名", field: "name" },
             { title: "科目", field: "subject" },
-            { title: "投稿日", field: "date"}
+            { title: "投稿日", field: "date"},
+            { title: "解答の有無", field: ""}
           ]}
           data={this.state.json}
-          actions={[
-            {
-              icon: DeleteIcon,
-              tooltip: "問題の削除",
-              onClick: (event, rowData) =>
-                alert(rowData.name + "を削除しますか？ " )
-            }
-          ]}
+          actions={this.state.action}
+          editable={this.state.editable}
         />
         <br/><br/>
         {this.state.assignment}<br/>
-        <Link to="/signout" color="primary">サインアウト</Link>
+        <Link to="/signout" color="primary">サインアウト</Link><br/>
+        {this.state.redirect}<br/>
 
       </div>
     );
