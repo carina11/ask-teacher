@@ -50,28 +50,11 @@ const tableIcons = {
   ViewColumn: forwardRef((props, ref) => <ViewColumn {...props} ref={ref} />)
 };
 
-
-
 class App extends React.Component {
   render() {
     return (
       <div>
         <BrowserRouter>
-          {/*<Link to="/">SignIn</Link>
-          <br />
-          <Link to="/signup">SignUp</Link>
-          <br />
-          <Link to="/assignment">問題投稿</Link>
-          <br />
-          <Link to="/assignmentsearch">科目検索</Link>
-          <br />
-          <Link to="/index">インデックス</Link>
-          <br />
-          <Link to="/signout">SignOut</Link>
-          <br />
-          <br />
-    <br />*/}
-
           <Route exact path="/" component={SignIn} />
           <Route path="/signup" component={SignUp} />
           <Route path="/assignment" component={Assignment} />
@@ -79,14 +62,6 @@ class App extends React.Component {
           <Route path="/index" component={Index} />
           <Route path="/signout" component={SignOut} />
         </BrowserRouter>
-
-        {/*<Kadai/>
-        <br/><br/>
-        <KadaiSearch/>
-        <br/><br/>
-        <SignUp/>
-        <br/><br/>
-        <SignIn/>*/}
       </div>
     );
   }
@@ -119,8 +94,6 @@ class Assignment extends React.Component {
         user: "ryoinagaki"
       }
     };
-    //console.log(json.kadaiName);
-    //console.log(json.subject);
     var database = firebase
       .database()
       .ref("test")
@@ -146,11 +119,11 @@ class Assignment extends React.Component {
         科目選択&nbsp;
         <select id="subject">
           <option value=""></option>
-          <option value="english">英語</option>
-          <option value="math">数学</option>
-          <option value="social_studies">社会</option>
-          <option value="science">理科</option>
-          <option value="japanese">国語</option>
+          <option value="英語">英語</option>
+          <option value="数学">数学</option>
+          <option value="社会">社会</option>
+          <option value="理科">理科</option>
+          <option value="国語">国語</option>
         </select>
         <br /><br/><br/>
         <Button variant="contained" color="primary" onClick={this.assignment.bind(this)}>送信</Button>
@@ -182,11 +155,11 @@ class AssignmentSearch extends React.Component {
         <br />
         <select id="subjectSearch">
           <option value=""></option>
-          <option value="english">英語</option>
-          <option value="math">数学</option>
-          <option value="social_studies">社会</option>
-          <option value="science">理科</option>
-          <option value="japanese">国語</option>
+          <option value="英語">英語</option>
+          <option value="数学">数学</option>
+          <option value="社会">社会</option>
+          <option value="理科">理科</option>
+          <option value="国語">国語</option>
         </select>
         <br />
         <input type="button" value="検索" onClick={this.search.bind(this)} />
@@ -200,11 +173,32 @@ class SignUp extends React.Component {
     var email = document.getElementById("signUpEmail").value + "@navi.com";
     var password = document.getElementById("signUpPassword").value;
     var confirmPassword = document.getElementById("confirmPassword").value;
+    var userType = document.getElementById("userType").value;
 
     if (password === confirmPassword) {
       firebase
         .auth()
         .createUserWithEmailAndPassword(email, password)
+        .then(function(){
+          firebase
+      .auth()
+      .signInWithEmailAndPassword(email, password)
+      .then(() => {
+        console.log(firebase.auth().currentUser.email);
+        if(userType === '0')firebase.auth().currentUser.updateProfile({
+          displayName: "teacher"
+        });
+        if(userType === '1')firebase.auth().currentUser.updateProfile({
+          displayName: "student"
+        });
+      })
+      .catch(function(error) {
+        // Handle Errors here.
+        console.log(error.code);
+        alert(error.message);
+        // ...
+      });
+        })
         .catch(function(error) {
           // Handle Errors here.
           var errorCode = error.code;
@@ -214,7 +208,7 @@ class SignUp extends React.Component {
           alert(errorMessage);
         });
     } else {
-      alert("パスワードが一致しません");
+      alert("入力した２つのパスワードが一致しません");
     }
   }
   render() {
@@ -228,9 +222,12 @@ class SignUp extends React.Component {
         Password<br/>
         <input type="password" id="signUpPassword" />
         <br />
-        再入力
+        再入力<br/>
         <input type="password" id="confirmPassword" />
         <br />
+        ユーザタイプ(先生：0, 生徒:1)<br/>
+        <input type="text" id="userType"/>
+        <br/>
         <button onClick={this.signup.bind(this)}>送信</button>
       </div>
     );
@@ -254,6 +251,14 @@ class SignIn extends React.Component {
       .signInWithEmailAndPassword(email, password)
       .then(() => {
         console.log(firebase.auth().currentUser.email);
+        //var displayName = firebase.auth().currentUser.displayName;
+        /*if(displayName === 'teacher')firebase.auth().currentUser.updateProfile({
+          displayName: "student"
+        });
+        if(displayName === 'student')firebase.auth().currentUser.updateProfile({
+          displayName: "teacher"
+        });*/
+        console.log(firebase.auth().currentUser.displayName);
         self.setState({redirect: true});
       })
       .catch(function(error) {
@@ -303,22 +308,36 @@ class Index extends React.Component {
     var subject = [];
     var self = this;
 
-    database.once("value", function(snapshot) {
-      snapshot.forEach(function(childSnapshot) {
-        if (firebase.auth().currentUser)
-          if (childSnapshot.val().user === firebase.auth().currentUser.email) {
-            assignment.push(childSnapshot.val().assignmentName.toString());
-            subject.push(childSnapshot.val().subject.toString());
-            self.setState({
-              json: self.state.json.concat({
-                name: childSnapshot.val().assignmentName,
-                subject: childSnapshot.val().subject,
-                date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
-              })
-            });
-          }
+    if(firebase.auth().currentUser.displayName === "student"){
+      database.once("value", function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+          if (firebase.auth().currentUser)
+            if (childSnapshot.val().user === firebase.auth().currentUser.email) {
+              self.setState({
+                json: self.state.json.concat({
+                  name: childSnapshot.val().assignmentName,
+                  subject: childSnapshot.val().subject,
+                  date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
+                })
+              });
+            }
+        });
       });
-    });
+    } else if(firebase.auth().currentUser.displayName === "teacher"){
+      database.once("value", function(snapshot) {
+        snapshot.forEach(function(childSnapshot) {
+          if (firebase.auth().currentUser) {
+              self.setState({
+                json: self.state.json.concat({
+                  name: childSnapshot.val().assignmentName,
+                  subject: childSnapshot.val().subject,
+                  date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
+                })
+              });
+          }
+        });
+      });
+    }
   }
 
   render() {
