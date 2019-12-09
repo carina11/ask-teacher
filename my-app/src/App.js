@@ -444,7 +444,7 @@ class Index extends React.Component {
         <br/>
         {this.state.assignment}<br/><br/>
         <Button variant="contained" color="primary" onClick={this.signout.bind(this)}>サインアウト</Button><br/><br/>
-        <Button variant="contained" color="primary" onClick={this.reload.bind(this)}>リロード</Button>
+        <Button variant="contained" color="primary" onClick={this.reload.bind(this)}>リロード</Button><br/><br/>
         {this.state.redirect}<br/>
 
       </div>
