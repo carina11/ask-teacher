@@ -318,7 +318,7 @@ class Index extends React.Component {
     }
     else if(firebase.auth().currentUser.displayName === "student"){
       self.setState({
-        assignment: <Link to="/assignment" color="primary">問題の新規投稿</Link>,
+        assignment: <Button variant="contained" color="primary" onClick={this.assignment.bind(this)}>新規問題投稿</Button>,
         editable: {
           onRowDelete: oldData =>
             new Promise((resolve, reject) => {
@@ -356,13 +356,6 @@ class Index extends React.Component {
                   answerURL: childSnapshot.val().answer.answerURL,
                 })
               });
-              /*if(childSnapshot.val().answer.exist === true){
-                self.setState({
-                  json: self.state.json.concat({
-                    answerURL: childSnapshot.val().answer.answerURL,
-                  })
-                });
-              }*/
             }
         });
       });
@@ -414,6 +407,16 @@ class Index extends React.Component {
       });
     }
   }
+  signout(){
+    this.setState({
+      redirect: <Redirect to="/signout"/>,
+    });
+  }
+  assignment(){
+    this.setState({
+      redirect: <Redirect to="/assignment"/>,
+    });
+  }
 
   render() {
     return (
@@ -431,9 +434,9 @@ class Index extends React.Component {
           actions={this.state.action}
           editable={this.state.editable}
         />
-        <br/><br/>
-        {this.state.assignment}<br/>
-        <Link to="/signout" color="primary">サインアウト</Link><br/>
+        <br/>
+        {this.state.assignment}<br/><br/>
+        <Button variant="contained" color="primary" onClick={this.signout.bind(this)}>サインアウト</Button>
         {this.state.redirect}<br/>
 
       </div>
@@ -460,10 +463,7 @@ class Answer extends React.Component{
       loading: false,
     }
   }
-  componentWillMount(){
-    console.log(this.props.location.state.key);
-    console.log("hello");
-  }
+
   answer(){
     var self = this;
     this.setState({
