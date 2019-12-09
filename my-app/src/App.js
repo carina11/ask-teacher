@@ -79,6 +79,7 @@ class Assignment extends React.Component {
       image: '',
       address: '',
       loading: false,
+      index: '',
     }
   }
   assignment() {
@@ -133,6 +134,11 @@ class Assignment extends React.Component {
       image: image,
     });
   }
+  index(){
+    this.setState({
+      index: <Redirect to="/index"/>
+    })
+  }
   render() {
     if(this.state.redirect === true){
       var redirect = <Redirect to="/index"/>;
@@ -157,8 +163,11 @@ class Assignment extends React.Component {
         画像アップロード<br/>
         <input type="file" accept="image/*" onChange ={(event)=>{this.getImage(event)}}/>
         <br /><br/><br/>
-        <Button variant="contained" color="primary" onClick={this.assignment.bind(this)}>送信</Button>
+        <Button variant="contained" color="primary" onClick={this.assignment.bind(this)}>投稿</Button><br/><br/>
+        <Button variant="contained" color="primary" onClick={this.index.bind(this)}>戻る</Button><br/><br/>
+
         {redirect}
+        {this.state.index}
         </Container>
         </LoadingOverlay>
       </div>
@@ -368,12 +377,11 @@ class Index extends React.Component {
             icon: AddIcon,
             tooltip: "解答の追加",
             onClick: (event, rowData) =>{
-              alert(rowData.name + "に解答を追加しますか？ " ); 
-              alert(rowData.key );
+              var r = window.confirm(rowData.name + "に解答を追加しますか？ " ); 
               var data = rowData.key;
               var name = rowData.name;
               var subject = rowData.subject;
-              self.setState({
+              if(r===true)self.setState({
                 redirect: <Redirect to={{
                   pathname: '/answer',
                   state: {
@@ -504,6 +512,11 @@ class Answer extends React.Component{
       image: image,
     });
   }
+  index(){
+    this.setState({
+      redirect: <Redirect to="/index"/>,
+    });
+  }
   render(){
     return(
       <div>
@@ -517,7 +530,9 @@ class Answer extends React.Component{
         解答画像をアップロード<br/>
         <input type="file" accept="image/*" onChange ={(event)=>{this.getImage(event)}}/>
         <br /><br/><br/>
-        <Button variant="contained" color="primary" onClick={this.answer.bind(this)}>送信</Button>
+        <Button variant="contained" color="primary" onClick={this.answer.bind(this)}>追加</Button><br/><br/>
+        <Button variant="contained" color="primary" onClick={this.index.bind(this)}>戻る</Button><br/><br/>
+
         {this.state.redirect}
         </Container>
         </LoadingOverlay>
