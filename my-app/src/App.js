@@ -63,6 +63,7 @@ class App extends React.Component {
           <Route path="/assignment" component={Assignment} />
           <Route path="/index" component={Index} />
           <Route path="/signout" component={SignOut} />
+          <Route path="/answer" component={Answer}/>
         </BrowserRouter>
       </div>
     );
@@ -323,8 +324,14 @@ class Index extends React.Component {
             new Promise((resolve, reject) => {
               setTimeout(() => {
                 { 
-                  firebase.database().ref("test/"+oldData.key).remove();
+                  
                   firebase.storage().ref().child(oldData.key+'.png').delete();
+                  firebase.database().ref("test/"+oldData.key).once("value",function(snapshot){
+                    if(snapshot.val().answer.exist === true)firebase.storage().ref().child(oldData.key+'-answer.png').delete();
+                  }).then(()=>{
+                    firebase.database().ref("test/"+oldData.key).remove();
+                  });
+                  
                   let data = this.state.json;
                   const index = data.indexOf(oldData);
                   data.splice(index, 1);
@@ -346,8 +353,16 @@ class Index extends React.Component {
                   subject: childSnapshot.val().subject,
                   date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
                   questionURL: childSnapshot.val().assignmentURL,
+                  answerURL: childSnapshot.val().answer.answerURL,
                 })
               });
+              /*if(childSnapshot.val().answer.exist === true){
+                self.setState({
+                  json: self.state.json.concat({
+                    answerURL: childSnapshot.val().answer.answerURL,
+                  })
+                });
+              }*/
             }
         });
       });
@@ -360,6 +375,19 @@ class Index extends React.Component {
             onClick: (event, rowData) =>{
               alert(rowData.name + "に解答を追加しますか？ " ); 
               alert(rowData.key );
+              var data = rowData.key;
+              var name = rowData.name;
+              var subject = rowData.subject;
+              self.setState({
+                redirect: <Redirect to={{
+                  pathname: '/answer',
+                  state: {
+                    key: data,
+                    name: name,
+                    subject: subject,
+                  }
+                }}/>
+              })
             }
           }
         ],
@@ -374,10 +402,15 @@ class Index extends React.Component {
                   subject: childSnapshot.val().subject,
                   date: `${childSnapshot.val().date.month}/${childSnapshot.val().date.day}`,
                   questionURL: childSnapshot.val().assignmentURL,
+                  answerURL: childSnapshot.val().answer.answerURL,
                 })
               });
           }
         });
+      });
+    }else{
+      this.state({
+        assignment: <Redirect to="/"/>
       });
     }
   }
@@ -392,7 +425,7 @@ class Index extends React.Component {
             { title: "問題名", field: "name" },
             { title: "科目", field: "subject" },
             { title: "問題", field: "questionURL", render: rowData => <img src={rowData.questionURL} style={{width: 60}}/>},
-            { title: "解答", field: "AnswerURL"}
+            { title: "解答", field: "AnswerURL", render: rowData => <img src={rowData.answerURL}style={{width: 60}}/>},
           ]}
           data={this.state.json}
           actions={this.state.action}
@@ -417,5 +450,74 @@ const SignOut = () => {
     });
   return <Redirect to="/" />;
 };
+
+class Answer extends React.Component{
+  constructor(props){
+    super(props);
+    this.state = {
+      redirect: '',
+      image: '',
+      loading: false,
+    }
+  }
+  componentWillMount(){
+    console.log(this.props.location.state.key);
+    console.log("hello");
+  }
+  answer(){
+    var self = this;
+    this.setState({
+      loading: true,
+    });
+    var storageRef = firebase.storage().ref().child(this.props.location.state.key + '-answer.png');
+    storageRef.put(this.state.image).then(()=>{
+      storageRef = firebase.storage().ref().child(this.props.location.state.key+'-answer.png');
+    var key = this.props.location.state.key;
+    console.log(key);
+    storageRef.getDownloadURL().then(function(url){
+      console.log(url);
+      firebase.database().ref("test/"+key).update({
+        answer: {
+          exist: true,
+          answerURL: url,
+          user: firebase.auth().currentUser.email,
+        }
+      });
+      self.setState({ 
+        redirect: <Redirect to="/index"/>, 
+        loading: false});
+    });
+    });
+    
+  }
+  getImage(event){
+    var image = event.target.files[0];
+    this.setState({
+      image: image,
+    });
+  }
+  render(){
+    return(
+      <div>
+        <div id="answer">
+        <LoadingOverlay active={this.state.loading} spinner text="Loading...">
+        <Container maxWidth="sm">
+        <h2>解答を追加</h2><br/>
+        問題名:<h3>{this.props.location.state.name}</h3><br/>
+        科目: <h3>{this.props.location.state.subject}</h3><br/>
+        <br/>
+        解答画像をアップロード<br/>
+        <input type="file" accept="image/*" onChange ={(event)=>{this.getImage(event)}}/>
+        <br /><br/><br/>
+        <Button variant="contained" color="primary" onClick={this.answer.bind(this)}>送信</Button>
+        {this.state.redirect}
+        </Container>
+        </LoadingOverlay>
+      </div>
+        
+      </div>
+    );
+  }
+}
 
 export default App;
