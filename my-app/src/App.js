@@ -27,6 +27,7 @@ import DeleteIcon from "@material-ui/icons/Delete";
 import Container from '@material-ui/core/Container';
 import AddIcon from '@material-ui/icons/Add';
 import InfoIcon from '@material-ui/icons/Info';
+import LoadingOverlay from 'react-loading-overlay';
 
 const tableIcons = {
   Add: forwardRef((props, ref) => <AddBox {...props} ref={ref} />),
@@ -75,9 +76,13 @@ class Assignment extends React.Component {
       redirect: false,
       image: '',
       address: '',
+      loading: false,
     }
   }
   assignment() {
+    this.setState({
+      loading: true,
+    });
     var date = new Date();    
     var month = date.getMonth() + 1;
     var day = date.getDay() + 1;
@@ -113,7 +118,7 @@ class Assignment extends React.Component {
         firebase.database().ref("test/"+key).update({
           assignmentURL: url,
         });
-        self.setState({ redirect: true});
+        self.setState({ redirect: true, loading: false});
       });
       });
       
@@ -132,6 +137,7 @@ class Assignment extends React.Component {
     }
     return (
       <div id="create">
+        <LoadingOverlay active={this.state.loading} spinner text="Loading...">
         <Container maxWidth="sm">
         <h2>問題投稿</h2><br/>
         問題名<br/>
@@ -152,6 +158,7 @@ class Assignment extends React.Component {
         <Button variant="contained" color="primary" onClick={this.assignment.bind(this)}>送信</Button>
         {redirect}
         </Container>
+        </LoadingOverlay>
       </div>
     );
   }
@@ -230,10 +237,14 @@ class SignIn extends React.Component {
     this.state = {
       redirect: false,
       email: '',
-      password: ''
+      password: '',
+      loading: false,
     };
   }
   signin() {
+    this.setState({
+      loading: true,
+    });
     var email = document.getElementById("signInEmail").value + "@navi.com";
     var password = document.getElementById("signInPassword").value;
     var self = this;
@@ -245,7 +256,7 @@ class SignIn extends React.Component {
       .then(() => {
         console.log(firebase.auth().currentUser.email);
         console.log(firebase.auth().currentUser.displayName);
-        self.setState({redirect: true});
+        self.setState({redirect: true, loading: false});
       })
       .catch(function(error) {
         // Handle Errors here.
@@ -262,6 +273,7 @@ class SignIn extends React.Component {
     }
     return (
       <div id="signin" >
+        <LoadingOverlay active={this.state.loading} spinner text='Loading...'>
         <Container maxWidth="sm">
         <h2>ユーザ認証</h2>
         <br />
@@ -276,6 +288,7 @@ class SignIn extends React.Component {
         <Button variant="contained" color="primary" onClick={this.signin.bind(this)}>送信</Button>
         {redirect}
         </Container>
+        </LoadingOverlay>
       </div>
     );
   }
