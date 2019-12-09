@@ -64,6 +64,7 @@ class App extends React.Component {
           <Route path="/index" component={Index} />
           <Route path="/signout" component={SignOut} />
           <Route path="/answer" component={Answer}/>
+          <Route path="/redirect" component={RedirectToIndex}/>
         </BrowserRouter>
       </div>
     );
@@ -306,6 +307,7 @@ class Index extends React.Component {
       action: '',
       redirect: '',
       editable: '',
+      reload: '',
     };
   }
   componentWillMount() {
@@ -417,6 +419,11 @@ class Index extends React.Component {
       redirect: <Redirect to="/assignment"/>,
     });
   }
+  reload(){
+    this.setState({
+      redirect: <Redirect to="/redirect"/>,
+    });
+  }
 
   render() {
     return (
@@ -436,7 +443,8 @@ class Index extends React.Component {
         />
         <br/>
         {this.state.assignment}<br/><br/>
-        <Button variant="contained" color="primary" onClick={this.signout.bind(this)}>サインアウト</Button>
+        <Button variant="contained" color="primary" onClick={this.signout.bind(this)}>サインアウト</Button><br/><br/>
+        <Button variant="contained" color="primary" onClick={this.reload.bind(this)}>リロード</Button>
         {this.state.redirect}<br/>
 
       </div>
@@ -516,6 +524,14 @@ class Answer extends React.Component{
       </div>
         
       </div>
+    );
+  }
+}
+
+class RedirectToIndex extends React.Component{
+  render(){
+    return(
+      <Redirect to="/index"/>
     );
   }
 }
