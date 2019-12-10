@@ -11,8 +11,6 @@ class Index extends React.Component {
   constructor(props) {
     super(props);
     this.state = {
-      name: ["a", "b", "c"],
-      subject: ["a", "math", "science"],
       json: [],
       assignment: "",
       action: "",
